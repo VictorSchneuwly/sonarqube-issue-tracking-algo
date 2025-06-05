@@ -134,6 +134,8 @@ import org.sonar.scanner.sensor.DefaultSensorStorage;
 import org.sonar.scanner.sensor.ExecutingSensorContext;
 import org.sonar.scanner.sensor.ProjectSensorContext;
 import org.sonar.scanner.sensor.UnchangedFilesHandler;
+import org.sonar.scanner.tokens.TokenPipe;
+import org.sonar.scanner.tokens.TokensPublisher;
 import org.sonar.scm.git.GitScmSupport;
 import org.sonar.scm.svn.SvnScmSupport;
 
@@ -266,6 +268,10 @@ public class SpringScannerContainer extends SpringComponentContainer {
       ScmConfiguration.class,
       ScmPublisher.class,
       ScmRevisionImpl.class,
+
+      // Tokens
+      TokenPipe.class,
+      TokensPublisher.class,
 
       // Sensors
       DefaultSensorStorage.class,

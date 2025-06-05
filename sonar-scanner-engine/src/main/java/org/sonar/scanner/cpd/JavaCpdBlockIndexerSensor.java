@@ -43,6 +43,7 @@ import org.sonar.duplications.statement.Statement;
 import org.sonar.duplications.statement.StatementChunker;
 import org.sonar.duplications.token.TokenChunker;
 import org.sonar.scanner.cpd.index.SonarCpdBlockIndex;
+import org.sonar.scanner.tokens.TokenPipe;
 
 /**
  * Special case for Java that use a dedicated block indexer.
@@ -54,8 +55,11 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
   private static final Logger LOG = LoggerFactory.getLogger(JavaCpdBlockIndexerSensor.class);
   private final SonarCpdBlockIndex index;
 
-  public JavaCpdBlockIndexerSensor(SonarCpdBlockIndex index) {
+  private final TokenPipe pipe;
+
+  public JavaCpdBlockIndexerSensor(SonarCpdBlockIndex index, TokenPipe pipe) {
     this.index = index;
+    this.pipe = pipe;
   }
 
   @Override
@@ -71,9 +75,9 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
       context.fileSystem().inputFiles(
         p.and(
           p.hasType(InputFile.Type.MAIN),
-          p.hasLanguage("java")
-        )
-      ).spliterator(), false)
+          p.hasLanguage("java")))
+        .spliterator(),
+      false)
       .filter(f -> !((DefaultInputFile) f).isExcludedForDuplication())
       .toList();
     if (sourceFiles.isEmpty()) {
@@ -95,7 +99,15 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
 
       try (InputStream is = inputFile.inputStream();
         Reader reader = new InputStreamReader(is, inputFile.charset())) {
-        statements = statementChunker.chunk(tokenChunker.chunk(reader));
+
+        // HACK: get the tokens here
+        var tokenQueue = tokenChunker.chunk(reader);
+        var scannerId = ((DefaultInputFile) inputFile).scannerId();
+        for (var token : tokenQueue) {
+          pipe.add(scannerId, token.getValue());
+        }
+
+        statements = statementChunker.chunk(tokenQueue);
       } catch (FileNotFoundException e) {
         throw new IllegalStateException("Cannot find file " + inputFile.file(), e);
       } catch (IOException e) {

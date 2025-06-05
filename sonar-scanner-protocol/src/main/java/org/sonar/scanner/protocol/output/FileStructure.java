@@ -41,7 +41,8 @@ public class FileStructure {
     COVERAGES("coverages-", Domain.PB),
     SOURCE("source-", ".txt"),
     SGNIFICANT_CODE("sgnificant-code-", Domain.PB),
-    CHANGED_LINES("changed-lines-", Domain.PB);
+    CHANGED_LINES("changed-lines-", Domain.PB),
+    TOKENS("tokens-", Domain.PB);
 
     private static final String PB = ".pb";
     private final String filePrefix;

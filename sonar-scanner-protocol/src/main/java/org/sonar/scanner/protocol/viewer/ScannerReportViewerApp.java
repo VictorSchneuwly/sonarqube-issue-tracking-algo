@@ -19,6 +19,7 @@
  */
 package org.sonar.scanner.protocol.viewer;
 
+import com.google.protobuf.StringValue;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -111,6 +112,9 @@ public class ScannerReportViewerApp {
   private JEditorPane significantCodeEditor;
   private JScrollPane metadataTab;
   private JEditorPane metadataEditor;
+
+  private JScrollPane tokensTab;
+  private JEditorPane tokensEditor;
 
   /**
    * Create the application.
@@ -262,6 +266,7 @@ public class ScannerReportViewerApp {
     updateScm(component);
     updateCpdTextBlocks(component);
     updateSignificantCode(component);
+    updateTokens(component);
   }
 
   private void updateCpdTextBlocks(Component component) {
@@ -488,6 +493,18 @@ public class ScannerReportViewerApp {
     }
   }
 
+  private void updateTokens(Component component) {
+    tokensEditor.setText("");
+    try (CloseableIterator<StringValue> it = reader.readTokens(component.getRef())) {
+      while (it.hasNext()) {
+        StringValue tokenString = it.next();
+        tokensEditor.getDocument().insertString(tokensEditor.getDocument().getLength(), tokenString.getValue() + "\n", null);
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException("Can't read tokens" + getNodeName(component), e);
+    }
+  }
+
   /**
    * Initialize the contents of the frame.
    */
@@ -623,6 +640,12 @@ public class ScannerReportViewerApp {
 
     metadataEditor = new JEditorPane();
     metadataTab.setViewportView(metadataEditor);
+
+    tokensTab = new JScrollPane();
+    tabbedPane.addTab("Vic - Tokens", null, tokensTab, null);
+
+    tokensEditor = new JEditorPane();
+    tokensTab.setViewportView(tokensEditor);
 
     treeScrollPane = new JScrollPane();
     treeScrollPane.setPreferredSize(new Dimension(200, 400));

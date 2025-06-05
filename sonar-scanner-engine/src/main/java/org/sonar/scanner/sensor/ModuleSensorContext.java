@@ -31,6 +31,7 @@ import org.sonar.api.config.Configuration;
 import org.sonar.scanner.bootstrap.ScannerPluginRepository;
 import org.sonar.scanner.cache.AnalysisCacheEnabled;
 import org.sonar.scanner.scan.branch.BranchConfiguration;
+import org.sonar.scanner.tokens.TokenPipe;
 
 @ThreadSafe
 public class ModuleSensorContext extends ProjectSensorContext {
@@ -40,9 +41,9 @@ public class ModuleSensorContext extends ProjectSensorContext {
   public ModuleSensorContext(DefaultInputProject project, InputModule module, Configuration config, FileSystem fs, ActiveRules activeRules,
     DefaultSensorStorage sensorStorage, SonarRuntime sonarRuntime, BranchConfiguration branchConfiguration,
     WriteCache writeCache, ReadCache readCache, AnalysisCacheEnabled analysisCacheEnabled, UnchangedFilesHandler unchangedFilesHandler,
-    ExecutingSensorContext executingSensorContext, ScannerPluginRepository pluginRepository) {
+    ExecutingSensorContext executingSensorContext, ScannerPluginRepository pluginRepository, TokenPipe tokenPipe) {
     super(project, config, fs, activeRules, sensorStorage, sonarRuntime, branchConfiguration, writeCache, readCache, analysisCacheEnabled,
-      unchangedFilesHandler, executingSensorContext, pluginRepository);
+      unchangedFilesHandler, executingSensorContext, pluginRepository, tokenPipe);
     this.module = module;
   }
 

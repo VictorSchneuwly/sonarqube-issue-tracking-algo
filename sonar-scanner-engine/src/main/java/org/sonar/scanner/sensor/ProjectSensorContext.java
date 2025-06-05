@@ -60,6 +60,7 @@ import org.sonar.scanner.bootstrap.ScannerPluginRepository;
 import org.sonar.scanner.cache.AnalysisCacheEnabled;
 import org.sonar.scanner.scan.branch.BranchConfiguration;
 import org.sonar.scanner.sensor.noop.NoOpNewAnalysisError;
+import org.sonar.scanner.tokens.TokenPipe;
 
 @ThreadSafe
 public class ProjectSensorContext implements SensorContext {
@@ -80,12 +81,14 @@ public class ProjectSensorContext implements SensorContext {
   private final ExecutingSensorContext executingSensorContext;
   private final ScannerPluginRepository pluginRepo;
 
+  private final TokenPipe tokenPipe;
+
   public ProjectSensorContext(DefaultInputProject project, Configuration config, FileSystem fs,
     ActiveRules activeRules,
     DefaultSensorStorage sensorStorage, SonarRuntime sonarRuntime, BranchConfiguration branchConfiguration,
     WriteCache writeCache, ReadCache readCache,
     AnalysisCacheEnabled analysisCacheEnabled, UnchangedFilesHandler unchangedFilesHandler,
-    ExecutingSensorContext executingSensorContext, ScannerPluginRepository pluginRepo) {
+    ExecutingSensorContext executingSensorContext, ScannerPluginRepository pluginRepo, TokenPipe tokenPipe) {
     this.project = project;
     this.config = config;
     this.fs = fs;
@@ -99,6 +102,8 @@ public class ProjectSensorContext implements SensorContext {
     this.unchangedFilesHandler = unchangedFilesHandler;
     this.executingSensorContext = executingSensorContext;
     this.pluginRepo = pluginRepo;
+
+    this.tokenPipe = tokenPipe;
   }
 
   @Override
@@ -178,7 +183,7 @@ public class ProjectSensorContext implements SensorContext {
 
   @Override
   public NewCpdTokens newCpdTokens() {
-    return new DefaultCpdTokens(sensorStorage);
+    return new DefaultCpdTokens(sensorStorage, tokenPipe::add);
   }
 
   @Override

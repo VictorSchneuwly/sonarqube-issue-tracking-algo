@@ -19,8 +19,7 @@
  */
 package org.sonar.scanner.protocol.output;
 
-import static org.sonar.core.util.CloseableIterator.emptyCloseableIterator;
-
+import com.google.protobuf.StringValue;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +28,8 @@ import java.io.InputStream;
 import javax.annotation.CheckForNull;
 import org.sonar.core.util.CloseableIterator;
 import org.sonar.core.util.Protobuf;
+
+import static org.sonar.core.util.CloseableIterator.emptyCloseableIterator;
 
 public class ScannerReportReader {
   private final FileStructure fileStructure;
@@ -132,6 +133,14 @@ public class ScannerReportReader {
     File file = fileStructure.fileFor(FileStructure.Domain.CPD_TEXT_BLOCKS, componentRef);
     if (fileExists(file)) {
       return Protobuf.readStream(file, ScannerReport.CpdTextBlock.parser());
+    }
+    return emptyCloseableIterator();
+  }
+
+  public CloseableIterator<StringValue> readTokens(int componentRef) {
+    File file = fileStructure.fileFor(FileStructure.Domain.TOKENS, componentRef);
+    if (fileExists(file)) {
+      return Protobuf.readStream(file, StringValue.parser());
     }
     return emptyCloseableIterator();
   }

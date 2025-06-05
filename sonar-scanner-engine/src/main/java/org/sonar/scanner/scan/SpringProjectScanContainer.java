@@ -64,6 +64,7 @@ import org.sonar.scanner.sensor.ProjectSensorContext;
 import org.sonar.scanner.sensor.ProjectSensorExtensionDictionary;
 import org.sonar.scanner.sensor.ProjectSensorOptimizer;
 import org.sonar.scanner.sensor.ProjectSensorsExecutor;
+import org.sonar.scanner.tokens.TokensPublisher;
 
 import static org.sonar.api.batch.InstantiationStrategy.PER_BATCH;
 import static org.sonar.scanner.bootstrap.ExtensionUtils.isDeprecatedScannerSide;
@@ -186,6 +187,7 @@ public class SpringProjectScanContainer extends SpringComponentContainer {
     getComponentByType(ScmPublisher.class).publish();
 
     getComponentByType(CpdExecutor.class).execute();
+    getComponentByType(TokensPublisher.class).execute();
     getComponentByType(ReportPublisher.class).execute();
 
     if (properties.shouldWaitForQualityGate()) {

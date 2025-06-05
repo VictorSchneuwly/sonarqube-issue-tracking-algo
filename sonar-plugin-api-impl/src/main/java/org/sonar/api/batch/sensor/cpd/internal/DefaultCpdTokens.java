@@ -21,14 +21,15 @@ package org.sonar.api.batch.sensor.cpd.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.sensor.cpd.NewCpdTokens;
 import org.sonar.api.batch.sensor.internal.DefaultStorable;
 import org.sonar.api.batch.sensor.internal.SensorStorage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
@@ -45,8 +46,15 @@ public class DefaultCpdTokens extends DefaultStorable implements NewCpdTokens {
   private TextRange lastRange;
   private boolean loggedTestCpdWarning = false;
 
+  private BiConsumer<Integer, String> pipe;
+
   public DefaultCpdTokens(SensorStorage storage) {
     super(storage);
+  }
+
+  public DefaultCpdTokens(SensorStorage storage, BiConsumer<Integer, String> pipe) {
+    this(storage);
+    this.pipe = pipe;
   }
 
   @Override
@@ -76,6 +84,12 @@ public class DefaultCpdTokens extends DefaultStorable implements NewCpdTokens {
     requireNonNull(range, "Range should not be null");
     requireNonNull(image, "Image should not be null");
     checkInputFileNotNull();
+
+    // HACK: get the image here
+    if (pipe != null) {
+      pipe.accept(inputFile.scannerId(), image);
+    }
+
     if (isExcludedForDuplication()) {
       return this;
     }
