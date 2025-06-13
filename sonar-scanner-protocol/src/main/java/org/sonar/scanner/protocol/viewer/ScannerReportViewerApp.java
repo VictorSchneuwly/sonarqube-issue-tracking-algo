@@ -19,7 +19,6 @@
  */
 package org.sonar.scanner.protocol.viewer;
 
-import com.google.protobuf.StringValue;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -495,10 +494,10 @@ public class ScannerReportViewerApp {
 
   private void updateTokens(Component component) {
     tokensEditor.setText("");
-    try (CloseableIterator<StringValue> it = reader.readTokens(component.getRef())) {
+    try (CloseableIterator<ScannerReport.Token> it = reader.readTokens(component.getRef())) {
       while (it.hasNext()) {
-        StringValue tokenString = it.next();
-        tokensEditor.getDocument().insertString(tokensEditor.getDocument().getLength(), tokenString.getValue() + "\n", null);
+        ScannerReport.Token token = it.next();
+        tokensEditor.getDocument().insertString(tokensEditor.getDocument().getLength(), token + "\n", null);
       }
     } catch (Exception e) {
       throw new IllegalStateException("Can't read tokens" + getNodeName(component), e);

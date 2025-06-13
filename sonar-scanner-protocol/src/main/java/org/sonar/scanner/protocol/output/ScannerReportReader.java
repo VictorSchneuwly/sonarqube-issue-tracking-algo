@@ -19,7 +19,6 @@
  */
 package org.sonar.scanner.protocol.output;
 
-import com.google.protobuf.StringValue;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -137,10 +136,10 @@ public class ScannerReportReader {
     return emptyCloseableIterator();
   }
 
-  public CloseableIterator<StringValue> readTokens(int componentRef) {
+  public CloseableIterator<ScannerReport.Token> readTokens(int componentRef) {
     File file = fileStructure.fileFor(FileStructure.Domain.TOKENS, componentRef);
     if (fileExists(file)) {
-      return Protobuf.readStream(file, StringValue.parser());
+      return Protobuf.readStream(file, ScannerReport.Token.parser());
     }
     return emptyCloseableIterator();
   }

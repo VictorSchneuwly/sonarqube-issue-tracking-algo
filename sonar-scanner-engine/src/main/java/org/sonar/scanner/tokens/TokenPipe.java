@@ -23,20 +23,21 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.sonar.scanner.protocol.output.ScannerReport;
 
 public class TokenPipe {
-  private final Map<Integer, List<String>> tokens;
+  private final Map<Integer, List<ScannerReport.Token>> tokens;
 
   public TokenPipe() {
     this.tokens = new HashMap<>();
   }
 
-  public void add(int scannerId, String token) {
+  public void add(int scannerId, ScannerReport.Token token) {
     tokens.computeIfAbsent(scannerId, id -> new LinkedList<>())
       .add(token);
   }
 
-  public Map<Integer, List<String>> getMap() {
+  public Map<Integer, List<ScannerReport.Token>> getMap() {
     return Map.copyOf(tokens);
   }
 }

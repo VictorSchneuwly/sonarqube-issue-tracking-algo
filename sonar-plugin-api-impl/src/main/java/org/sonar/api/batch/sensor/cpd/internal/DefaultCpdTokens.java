@@ -22,6 +22,7 @@ package org.sonar.api.batch.sensor.cpd.internal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.InputFile;
@@ -46,13 +47,13 @@ public class DefaultCpdTokens extends DefaultStorable implements NewCpdTokens {
   private TextRange lastRange;
   private boolean loggedTestCpdWarning = false;
 
-  private BiConsumer<Integer, String> pipe;
+  private BiConsumer<Integer, Pair<String, TextRange>> pipe;
 
   public DefaultCpdTokens(SensorStorage storage) {
     super(storage);
   }
 
-  public DefaultCpdTokens(SensorStorage storage, BiConsumer<Integer, String> pipe) {
+  public DefaultCpdTokens(SensorStorage storage, BiConsumer<Integer, Pair<String, TextRange>> pipe) {
     this(storage);
     this.pipe = pipe;
   }
@@ -87,7 +88,7 @@ public class DefaultCpdTokens extends DefaultStorable implements NewCpdTokens {
 
     // HACK: get the image here
     if (pipe != null) {
-      pipe.accept(inputFile.scannerId(), image);
+      pipe.accept(inputFile.scannerId(), Pair.of(image, range));
     }
 
     if (isExcludedForDuplication()) {

@@ -26,6 +26,7 @@ import org.sonar.api.SonarRuntime;
 import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.InputModule;
+import org.sonar.api.batch.fs.TextPointer;
 import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.fs.internal.DefaultInputProject;
 import org.sonar.api.batch.rule.ActiveRules;
@@ -58,6 +59,7 @@ import org.sonar.api.utils.Version;
 import org.sonar.core.platform.PluginInfo;
 import org.sonar.scanner.bootstrap.ScannerPluginRepository;
 import org.sonar.scanner.cache.AnalysisCacheEnabled;
+import org.sonar.scanner.protocol.output.ScannerReport;
 import org.sonar.scanner.scan.branch.BranchConfiguration;
 import org.sonar.scanner.sensor.noop.NoOpNewAnalysisError;
 import org.sonar.scanner.tokens.TokenPipe;
@@ -183,7 +185,19 @@ public class ProjectSensorContext implements SensorContext {
 
   @Override
   public NewCpdTokens newCpdTokens() {
-    return new DefaultCpdTokens(sensorStorage, tokenPipe::add);
+    return new DefaultCpdTokens(sensorStorage, (scannerId, pair) -> {
+      if (tokenPipe != null) {
+        String value = pair.getLeft();
+        TextPointer position = pair.getRight().start();
+
+        ScannerReport.Token.Builder tokenBuilder = ScannerReport.Token.newBuilder()
+          .setText(value)
+          .setLine(position.line())
+          .setColumn(position.lineOffset());
+
+        tokenPipe.add(scannerId, tokenBuilder.build());
+      }
+    });
   }
 
   @Override

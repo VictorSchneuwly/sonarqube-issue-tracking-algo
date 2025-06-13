@@ -19,7 +19,6 @@
  */
 package org.sonar.scanner.tokens;
 
-import com.google.protobuf.StringValue;
 import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.scanner.protocol.output.ScannerReport;
 import org.sonar.scanner.report.ReportPublisher;
 import org.sonar.scanner.util.ProgressReport;
 
@@ -54,16 +54,11 @@ public class TokensPublisher {
   public void execute() {
     progressReport.start("Starting tokenization");
 
-    for (Map.Entry<Integer, List<String>> entry : pipe.getMap().entrySet()) {
+    for (Map.Entry<Integer, List<ScannerReport.Token>> entry : pipe.getMap().entrySet()) {
       int scannerId = entry.getKey();
-      List<String> tokens = entry.getValue();
+      List<ScannerReport.Token> tokens = entry.getValue();
 
-      Iterable<StringValue> stringTokens = () -> tokens.stream()
-        .filter(token -> token != null && !token.isEmpty())
-        .map(token -> StringValue.newBuilder().setValue(token).build())
-        .iterator();
-
-      publisher.getWriter().writeTokens(scannerId, stringTokens);
+      publisher.getWriter().writeTokens(scannerId, tokens);
     }
 
     progressReport.stopAndLogTotalTime("Tokenization completed");

@@ -216,6 +216,12 @@ message Issue {
   repeated Impact overriddenImpacts = 12;
 }
 
+message Token {
+  string text = 1;
+  int32 line = 2;
+  int32 column = 3;
+}
+
 message ExternalIssue {
   string engine_id = 1;
   string rule_id = 2;

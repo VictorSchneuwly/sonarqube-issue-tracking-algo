@@ -20,7 +20,6 @@
 package org.sonar.scanner.protocol.output;
 
 import com.google.protobuf.AbstractMessageLite;
-import com.google.protobuf.StringValue;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -167,7 +166,7 @@ public class ScannerReportWriter {
     return file;
   }
 
-  public File writeTokens(int componentRef, Iterable<StringValue> tokens) {
+  public File writeTokens(int componentRef, Iterable<ScannerReport.Token> tokens) {
     File file = fileStructure.fileFor(FileStructure.Domain.TOKENS, componentRef);
     Protobuf.writeStream(tokens, file, false);
     return file;

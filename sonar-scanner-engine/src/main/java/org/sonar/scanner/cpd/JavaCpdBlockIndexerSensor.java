@@ -43,6 +43,7 @@ import org.sonar.duplications.statement.Statement;
 import org.sonar.duplications.statement.StatementChunker;
 import org.sonar.duplications.token.TokenChunker;
 import org.sonar.scanner.cpd.index.SonarCpdBlockIndex;
+import org.sonar.scanner.protocol.output.ScannerReport;
 import org.sonar.scanner.tokens.TokenPipe;
 
 /**
@@ -104,7 +105,11 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
         var tokenQueue = tokenChunker.chunk(reader);
         var scannerId = ((DefaultInputFile) inputFile).scannerId();
         for (var token : tokenQueue) {
-          pipe.add(scannerId, token.getValue());
+          ScannerReport.Token.Builder tokenBuilder = ScannerReport.Token.newBuilder()
+            .setText(token.getValue())
+            .setLine(token.getLine())
+            .setColumn(token.getColumn());
+          pipe.add(scannerId, tokenBuilder.build());
         }
 
         statements = statementChunker.chunk(tokenQueue);
