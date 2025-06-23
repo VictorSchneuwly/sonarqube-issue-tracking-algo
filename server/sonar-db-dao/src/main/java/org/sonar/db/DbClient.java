@@ -20,6 +20,7 @@
 package org.sonar.db;
 
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import org.sonar.db.alm.pat.AlmPatDao;
 import org.sonar.db.alm.setting.AlmSettingDao;
@@ -47,6 +48,8 @@ import org.sonar.db.issue.AnticipatedTransitionDao;
 import org.sonar.db.issue.IssueChangeDao;
 import org.sonar.db.issue.IssueDao;
 import org.sonar.db.issue.IssueFixedDao;
+import org.sonar.db.issuetoken.IssueTokenDao;
+import org.sonar.db.issuetoken.IssueTokenDto;
 import org.sonar.db.measure.MeasureDao;
 import org.sonar.db.measure.ProjectMeasureDao;
 import org.sonar.db.metric.MetricDao;
@@ -200,6 +203,7 @@ public class DbClient {
   private final ProjectExportDao projectExportDao;
   private final IssueFixedDao issueFixedDao;
   private final TelemetryMetricsSentDao telemetryMetricsSentDao;
+  private final IssueTokenDao issueTokenDao;
 
   public DbClient(Database database, MyBatis myBatis, DBSessions dbSessions, Dao... daos) {
     this.database = database;
@@ -296,6 +300,7 @@ public class DbClient {
     projectExportDao = getDao(map, ProjectExportDao.class);
     issueFixedDao = getDao(map, IssueFixedDao.class);
     telemetryMetricsSentDao = getDao(map, TelemetryMetricsSentDao.class);
+    issueTokenDao = getDao(map, IssueTokenDao.class);
   }
 
   public DbSession openSession(boolean batch) {
@@ -658,5 +663,12 @@ public class DbClient {
 
   public ProjectExportDao projectExportDao() {
     return projectExportDao;
+  }
+
+  public void insertIssueTokens(DbSession session, List<IssueTokenDto> tokens) {
+    if (tokens.isEmpty()) {
+      return;
+    }
+    tokens.forEach(token -> issueTokenDao.insert(session, token));
   }
 }

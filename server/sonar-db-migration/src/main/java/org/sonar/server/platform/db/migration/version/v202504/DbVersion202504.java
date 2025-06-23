@@ -29,6 +29,7 @@ public class DbVersion202504 implements DbVersion {
   @Override
   public void addSteps(MigrationStepRegistry registry) {
     registry
-      .add(2025_04_000, "Add 'withdrawn' column to 'sca_vulnerability_issues' table", AddWithdrawnToScaVulnerabilityIssues.class);
+      .add(2025_04_000, "Add 'withdrawn' column to 'sca_vulnerability_issues' table", AddWithdrawnToScaVulnerabilityIssues.class)
+      .add(2025_04_001, "Create 'issue_tokens' table", CreateTableIssueTokens.class);
   }
 }

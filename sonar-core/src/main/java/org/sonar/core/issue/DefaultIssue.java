@@ -140,6 +140,8 @@ public class DefaultIssue implements Issue, Trackable {
   private final Map<SoftwareQuality, DefaultImpact> impacts = new LinkedHashMap<>();
   private CleanCodeAttribute cleanCodeAttribute = null;
 
+  private List<String> snippet = null;
+
   @Override
   public String key() {
     return key;
@@ -761,5 +763,15 @@ public class DefaultIssue implements Issue, Trackable {
   @Override
   public Date getUpdateDate() {
     return updateDate;
+  }
+
+  @Override
+  public List<String> getSnippet() {
+    return snippet != null ? List.copyOf(snippet) : List.of();
+  }
+
+  public DefaultIssue setSnippet(List<String> snippet) {
+    this.snippet = List.copyOf(snippet);
+    return this;
   }
 }

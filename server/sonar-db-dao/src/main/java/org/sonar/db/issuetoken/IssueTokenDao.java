@@ -17,42 +17,23 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.core.issue.tracking;
+package org.sonar.db.issuetoken;
 
-import java.util.Date;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import org.sonar.api.rule.RuleKey;
-import org.sonar.core.issue.DefaultIssue;
+import org.sonar.db.Dao;
+import org.sonar.db.DbSession;
 
-public interface Trackable {
+public class IssueTokenDao implements Dao {
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
-
-  /**
-   * Trimmed message of issue
-   */
-  @CheckForNull
-  String getMessage();
-
-  @CheckForNull
-  String getLineHash();
-
-  RuleKey getRuleKey();
-
-  String getStatus();
-
-  default List<String> getSnippet() {
-    throw new UnsupportedOperationException();
+  public List<IssueTokenDto> selectByIssueUuid(DbSession session, String issueUuid) {
+    return mapper(session).selectByIssueUuid(issueUuid);
   }
 
-  /**
-   * Functional update date for the issue. See {@link DefaultIssue#updateDate()}
-   */
-  Date getUpdateDate();
+  public void insert(DbSession session, IssueTokenDto dto) {
+    mapper(session).insert(dto);
+  }
+
+  private static IssueTokenMapper mapper(DbSession session) {
+    return session.getMapper(IssueTokenMapper.class);
+  }
 }

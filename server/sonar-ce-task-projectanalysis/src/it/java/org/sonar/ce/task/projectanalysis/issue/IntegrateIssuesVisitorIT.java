@@ -53,6 +53,7 @@ import org.sonar.ce.task.projectanalysis.qualityprofile.ActiveRulesHolderRule;
 import org.sonar.ce.task.projectanalysis.qualityprofile.AlwaysActiveRulesHolderImpl;
 import org.sonar.ce.task.projectanalysis.source.NewLinesRepository;
 import org.sonar.ce.task.projectanalysis.source.SourceLinesHashRepository;
+import org.sonar.ce.task.projectanalysis.tokens.TokensRepository;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.core.issue.FieldDiffs;
 import org.sonar.core.issue.IssueChangeContext;
@@ -153,7 +154,7 @@ class IntegrateIssuesVisitorIT {
 
     DbClient dbClient = dbTester.getDbClient();
     rawInputFactory = spy(new TrackerRawInputFactory(treeRootHolder, reportReader, sourceLinesHash, issueFilter,
-      ruleRepositoryRule, activeRulesHolder));
+      ruleRepositoryRule, activeRulesHolder, new TokensRepository()));
     TrackerBaseInputFactory baseInputFactory = new TrackerBaseInputFactory(issuesLoader, dbClient, movedFilesRepository);
     TrackerTargetBranchInputFactory targetInputFactory = new TrackerTargetBranchInputFactory(issuesLoader, targetBranchComponentUuids, dbClient, movedFilesRepository);
     TrackerReferenceBranchInputFactory mergeInputFactory = new TrackerReferenceBranchInputFactory(issuesLoader, mergeBranchComponentsUuids, dbClient);

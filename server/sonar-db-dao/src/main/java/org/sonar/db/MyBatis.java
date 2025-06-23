@@ -81,6 +81,8 @@ import org.sonar.db.issue.IssueFixedMapper;
 import org.sonar.db.issue.IssueMapper;
 import org.sonar.db.issue.NewCodeReferenceIssueDto;
 import org.sonar.db.issue.PrIssueDto;
+import org.sonar.db.issuetoken.IssueTokenDto;
+import org.sonar.db.issuetoken.IssueTokenMapper;
 import org.sonar.db.measure.LargestBranchNclocDto;
 import org.sonar.db.measure.MeasureMapper;
 import org.sonar.db.measure.ProjectMeasureDto;
@@ -227,6 +229,7 @@ public class MyBatis {
     confBuilder.loadAlias("Impact", ImpactDto.class);
     confBuilder.loadAlias("Issue", IssueDto.class);
     confBuilder.loadAlias("NewCodeReferenceIssue", NewCodeReferenceIssueDto.class);
+    confBuilder.loadAlias("IssueToken", IssueTokenDto.class);
     confBuilder.loadAlias("ProjectMeasure", ProjectMeasureDto.class);
     confBuilder.loadAlias("LargestBranchNclocDto", LargestBranchNclocDto.class);
     confBuilder.loadAlias("NotificationQueue", NotificationQueueDto.class);
@@ -303,6 +306,7 @@ public class MyBatis {
       IssueChangeMapper.class,
       IssueMapper.class,
       IssueFixedMapper.class,
+      IssueTokenMapper.class,
       MeasureMapper.class,
       ProjectMeasureMapper.class,
       MetricMapper.class,

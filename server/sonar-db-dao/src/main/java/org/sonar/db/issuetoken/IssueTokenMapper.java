@@ -17,42 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonar.core.issue.tracking;
+package org.sonar.db.issuetoken;
 
-import java.util.Date;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import org.sonar.api.rule.RuleKey;
-import org.sonar.core.issue.DefaultIssue;
+import org.apache.ibatis.annotations.Param;
 
-public interface Trackable {
+public interface IssueTokenMapper {
+  List<IssueTokenDto> selectByIssueUuid(@Param("issueUuid") String issueUuid);
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
-
-  /**
-   * Trimmed message of issue
-   */
-  @CheckForNull
-  String getMessage();
-
-  @CheckForNull
-  String getLineHash();
-
-  RuleKey getRuleKey();
-
-  String getStatus();
-
-  default List<String> getSnippet() {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Functional update date for the issue. See {@link DefaultIssue#updateDate()}
-   */
-  Date getUpdateDate();
+  void insert(IssueTokenDto dto);
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+
+<mapper namespace="org.sonar.db.issuetoken.IssueTokenMapper">
+
+  <resultMap id="issueTokenResultMap" type="IssueToken" autoMapping="true">
+    <id property="uuid" column="uuid"/>
+    <result property="token" column="token"/>
+    <result property="issueUuid" column="issue_uuid"/>
+  </resultMap>
+
+  <sql id="issueTokenColumns">
+    i.uuid as uuid,
+    i.token as token,
+    i.issue_uuid as "issueUuid"
+  </sql>
+
+  <select id="selectByIssueUuid" parameterType="string" resultMap="issueTokenResultMap">
+    SELECT
+      uuid,
+      token,
+      issue_uuid
+    FROM issue_tokens
+    WHERE issue_uuid = #{issueUuid, jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insert" parameterType="IssueToken" useGeneratedKeys="false">
+    INSERT INTO issue_tokens (uuid, token, issue_uuid)
+    VALUES (
+      #{uuid, jdbcType=VARCHAR},
+      #{token, jdbcType=VARCHAR},
+      #{issueUuid, jdbcType=VARCHAR}
+    )
+  </insert>
+
+</mapper>

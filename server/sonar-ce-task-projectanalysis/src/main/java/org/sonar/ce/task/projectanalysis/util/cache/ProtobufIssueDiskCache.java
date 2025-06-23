@@ -152,6 +152,10 @@ public class ProtobufIssueDiskCache implements DiskCache<DefaultIssue> {
     for (IssueCache.FieldDiffs protoFieldDiffs : next.getChangesList()) {
       defaultIssue.addChange(toDefaultIssueChanges(protoFieldDiffs));
     }
+
+    // Retrieve tokens from protobuf
+    defaultIssue.setSnippet(next.getTokensList());
+
     return defaultIssue;
   }
 
@@ -214,6 +218,10 @@ public class ProtobufIssueDiskCache implements DiskCache<DefaultIssue> {
     for (FieldDiffs fieldDiffs : defaultIssue.changes()) {
       builder.addChanges(toProtoIssueChanges(fieldDiffs));
     }
+
+    // Add tokens to cache
+    builder.clearTokens();
+    builder.addAllTokens(defaultIssue.getSnippet());
     return builder.build();
   }
 

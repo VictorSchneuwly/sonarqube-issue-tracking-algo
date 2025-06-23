@@ -52,6 +52,8 @@ public class ReportComputationSteps extends AbstractComputationSteps {
     ValidateProjectStep.class,
     LoadQualityProfilesStep.class,
 
+    LoadTokensStep.class,
+
     // Pre analysis operations
     PreMeasuresComputationChecksStep.class,
     SqUpgradeDetectionEventsStep.class,

@@ -67,6 +67,8 @@ public class ScannerReportReaderRule implements TestRule, ScannerReportReader, A
   private File dependencyFilesZip;
   private List<ScannerReport.AnalysisData> analysisData = new ArrayList<>();
 
+  private Map<Integer, List<ScannerReport.Token>> tokens = new HashMap<>();
+
   @Override
   public Statement apply(final Statement statement, Description description) {
     return new Statement() {
@@ -95,6 +97,7 @@ public class ScannerReportReaderRule implements TestRule, ScannerReportReader, A
     this.coverages.clear();
     this.fileSources.clear();
     this.significantCode.clear();
+    this.tokens.clear();
   }
 
   @Override
@@ -227,6 +230,17 @@ public class ScannerReportReaderRule implements TestRule, ScannerReportReader, A
 
   public ScannerReportReaderRule putDuplications(int componentRef, ScannerReport.Duplication... duplications) {
     this.duplications.put(componentRef, Arrays.asList(duplications));
+    return this;
+  }
+
+  @Override
+  public CloseableIterator<ScannerReport.Token> readTokens(int fileRef) {
+    return closeableIterator(this.tokens.get(fileRef));
+  }
+
+  public ScannerReportReaderRule putTokens(int fileRef, List<ScannerReport.Token> tokens) {
+    Preconditions.checkNotNull(tokens);
+    this.tokens.put(fileRef, tokens);
     return this;
   }
 

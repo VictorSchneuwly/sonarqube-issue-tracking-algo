@@ -36,6 +36,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rule.Severity;
+import org.sonar.ce.task.projectanalysis.tokens.TokensRepository;
 import org.sonar.core.rule.RuleType;
 import org.sonar.api.utils.Duration;
 import org.sonar.ce.common.scanner.ScannerReportReaderRule;
@@ -97,7 +98,7 @@ class TrackerRawInputFactoryTest {
   private final SourceLinesHashRepository sourceLinesHash = mock(SourceLinesHashRepository.class);
   private final IssueFilter issueFilter = mock(IssueFilter.class);
   private final TrackerRawInputFactory underTest = new TrackerRawInputFactory(treeRootHolder, reportReader, sourceLinesHash,
-    issueFilter, ruleRepository, activeRulesHolder);
+    issueFilter, ruleRepository, activeRulesHolder, new TokensRepository());
 
   @BeforeEach
   void before() {

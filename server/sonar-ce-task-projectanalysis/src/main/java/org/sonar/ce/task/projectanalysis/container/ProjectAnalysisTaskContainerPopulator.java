@@ -149,6 +149,7 @@ import org.sonar.ce.task.projectanalysis.step.DefaultPersistScaStepImpl;
 import org.sonar.ce.task.projectanalysis.step.DefaultScaStepImpl;
 import org.sonar.ce.task.projectanalysis.step.ReportComputationSteps;
 import org.sonar.ce.task.projectanalysis.step.SmallChangesetQualityGateSpecialCase;
+import org.sonar.ce.task.projectanalysis.tokens.TokensRepository;
 import org.sonar.ce.task.projectanalysis.webhook.WebhookPostTask;
 import org.sonar.ce.task.setting.SettingsLoader;
 import org.sonar.ce.task.step.ComputationStepExecutor;
@@ -261,6 +262,8 @@ public final class ProjectAnalysisTaskContainerPopulator implements ContainerPop
       QProfileStatusRepositoryImpl.class,
       IssueChangesToDeleteRepository.class,
       PullRequestFixedIssueRepositoryImpl.class,
+
+      TokensRepository.class,
 
       // issues
       RuleRepositoryImpl.class,

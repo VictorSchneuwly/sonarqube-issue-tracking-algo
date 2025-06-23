@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.rule.RuleKey;
-import org.sonar.core.rule.RuleType;
 import org.sonar.api.server.rule.internal.ImpactMapper;
 import org.sonar.api.utils.Duration;
 import org.sonar.ce.common.scanner.ScannerReportReader;
@@ -43,10 +42,12 @@ import org.sonar.ce.task.projectanalysis.issue.filter.IssueFilter;
 import org.sonar.ce.task.projectanalysis.qualityprofile.ActiveRule;
 import org.sonar.ce.task.projectanalysis.qualityprofile.ActiveRulesHolder;
 import org.sonar.ce.task.projectanalysis.source.SourceLinesHashRepository;
+import org.sonar.ce.task.projectanalysis.tokens.TokensRepository;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.core.issue.tracking.Input;
 import org.sonar.core.issue.tracking.LazyInput;
 import org.sonar.core.issue.tracking.LineHashSequence;
+import org.sonar.core.rule.RuleType;
 import org.sonar.core.rule.RuleTypeMapper;
 import org.sonar.core.util.CloseableIterator;
 import org.sonar.db.protobuf.DbCommons;
@@ -69,15 +70,17 @@ public class TrackerRawInputFactory {
   private final SourceLinesHashRepository sourceLinesHash;
   private final RuleRepository ruleRepository;
   private final ActiveRulesHolder activeRulesHolder;
+  private final TokensRepository tokensRepository;
 
   public TrackerRawInputFactory(TreeRootHolder treeRootHolder, ScannerReportReader reportReader, SourceLinesHashRepository sourceLinesHash,
-    IssueFilter issueFilter, RuleRepository ruleRepository, ActiveRulesHolder activeRulesHolder) {
+    IssueFilter issueFilter, RuleRepository ruleRepository, ActiveRulesHolder activeRulesHolder, TokensRepository tokensRepository) {
     this.treeRootHolder = treeRootHolder;
     this.reportReader = reportReader;
     this.sourceLinesHash = sourceLinesHash;
     this.issueFilter = issueFilter;
     this.ruleRepository = ruleRepository;
     this.activeRulesHolder = activeRulesHolder;
+    this.tokensRepository = tokensRepository;
   }
 
   public Input<DefaultIssue> create(Component component) {
@@ -167,6 +170,7 @@ public class TrackerRawInputFactory {
         int startLine = reportIssue.getTextRange().getStartLine();
         issue.setLine(startLine);
         issue.setChecksum(lineHashSeq.getHashForLine(startLine));
+        setSnippet(issue, reportIssue.getTextRange());
       } else {
         issue.setChecksum("");
       }
@@ -201,6 +205,13 @@ public class TrackerRawInputFactory {
 
       issue.replaceImpacts(replaceDefaultWithOverriddenImpactsForIssue(issue.ruleKey(), reportIssue.getOverriddenImpactsList()));
       return issue;
+    }
+
+    private void setSnippet(DefaultIssue issue, ScannerReport.TextRange textRange) {
+      var snippet = tokensRepository.getTokensSnippet(component, textRange).stream()
+        .map(ScannerReport.Token::getText)
+        .toList();
+      issue.setSnippet(snippet);
     }
 
     private String replaceDefaultWithOverriddenSeverity(RuleKey ruleKey, ScannerReport.Issue reportIssue) {

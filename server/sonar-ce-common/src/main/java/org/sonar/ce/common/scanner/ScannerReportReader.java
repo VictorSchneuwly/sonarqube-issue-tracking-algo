@@ -59,6 +59,8 @@ public interface ScannerReportReader {
 
   CloseableIterator<ScannerReport.LineCoverage> readComponentCoverage(int fileRef);
 
+  CloseableIterator<ScannerReport.Token> readTokens(int fileRef);
+
   /**
    * Reads a file's source code, line by line. Returns an absent optional if the file does not exist
    */

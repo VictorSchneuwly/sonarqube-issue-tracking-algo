@@ -44,6 +44,7 @@ import org.sonar.db.issue.IssueDto;
 import org.sonar.db.issue.NewCodeReferenceIssueDto;
 import org.sonar.db.newcodeperiod.NewCodePeriodType;
 import org.sonar.server.issue.IssueStorage;
+import org.sonar.db.issuetoken.IssueTokenDto;
 
 import static org.sonar.core.util.FileUtils.humanReadableByteCountSI;
 import static org.sonar.db.issue.IssueDto.toDtoForComputationInsert;
@@ -144,6 +145,20 @@ public class PersistIssuesStep implements ComputationStep {
       statistics.inserts++;
       issueStorage.insertChanges(changeMapper, addedIssue, uuidFactory);
       addedIssue.getAnticipatedTransitionUuid().ifPresent(anticipatedTransitionMapper::delete);
+
+      // Insert tokens if present
+      if (addedIssue.getSnippet() != null && !addedIssue.getSnippet().isEmpty()) {
+        List<IssueTokenDto> tokenDtos = addedIssue.getSnippet().stream()
+          .map(token -> {
+            IssueTokenDto tokenDto = new IssueTokenDto();
+            tokenDto.setUuid(uuidFactory.create());
+            tokenDto.setToken(token);
+            tokenDto.setIssueUuid(dto.getKee());
+            return tokenDto;
+          })
+          .toList();
+        dbClient.insertIssueTokens(dbSession, tokenDtos);
+      }
     });
 
     issueDtos.forEach(issueDto -> insertAdditionalIssueData(issueDao, dbSession, issueDto));

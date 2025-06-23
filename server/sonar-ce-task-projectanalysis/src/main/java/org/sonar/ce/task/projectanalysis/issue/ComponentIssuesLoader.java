@@ -169,12 +169,12 @@ public class ComponentIssuesLoader {
     CollectLastStatusAndResolution collectLastStatusAndResolution = new CollectLastStatusAndResolution(issuesByKey);
 
     dbClient.issueChangeDao().scrollDiffChangesOfIssues(dbSession, issuesByKey.keySet(), resultContext -> {
-        IssueChangeDto issueChangeDto = resultContext.getResultObject();
-        FieldDiffs fieldDiffs = issueChangeDto.toFieldDiffs();
+      IssueChangeDto issueChangeDto = resultContext.getResultObject();
+      FieldDiffs fieldDiffs = issueChangeDto.toFieldDiffs();
 
-        collectChangesToDelete.handle(issueChangeDto, fieldDiffs);
-        collectLastStatusAndResolution.handle(issueChangeDto, fieldDiffs);
-      });
+      collectChangesToDelete.handle(issueChangeDto, fieldDiffs);
+      collectLastStatusAndResolution.handle(issueChangeDto, fieldDiffs);
+    });
   }
 
   private List<DefaultIssue> loadOpenIssues(String componentUuid, DbSession dbSession) {
