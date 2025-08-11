@@ -31,6 +31,20 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> extends Abst
   public NonClosedTracking<RAW, BASE> trackNonClosed(Input<RAW> rawInput, Input<BASE> baseInput) {
     NonClosedTracking<RAW, BASE> tracking = NonClosedTracking.of(rawInput, baseInput);
 
+    if (tracking.isComplete()) {
+      return tracking;
+    }
+
+    // return oldTrackNonClosed(tracking);
+
+    TokenMatch<RAW, BASE> tokenMatch = new TokenMatch<>(tracking);
+
+    tokenMatch.match(tracking);
+
+    return tracking;
+  }
+
+  private NonClosedTracking<RAW, BASE> oldTrackNonClosed(Input<RAW> rawInput, Input<BASE> baseInput, NonClosedTracking<RAW, BASE> tracking) {
     // 1. match by rule, line, line hash and message
     match(tracking, LineAndLineHashAndMessage::new);
 

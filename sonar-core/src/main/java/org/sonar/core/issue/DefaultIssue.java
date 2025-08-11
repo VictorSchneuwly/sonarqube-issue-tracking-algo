@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -770,8 +771,17 @@ public class DefaultIssue implements Issue, Trackable {
     return snippet != null ? List.copyOf(snippet) : List.of();
   }
 
+  @Override
+  public void sortSnippet(Comparator<String> comparator) {
+    if (snippet == null) {
+      return;
+    }
+
+    snippet.sort(comparator);
+  }
+
   public DefaultIssue setSnippet(List<String> snippet) {
-    this.snippet = List.copyOf(snippet);
+    this.snippet = new ArrayList<>(snippet);
     return this;
   }
 }

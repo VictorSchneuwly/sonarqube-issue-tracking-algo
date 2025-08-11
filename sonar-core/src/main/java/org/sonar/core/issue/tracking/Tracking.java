@@ -73,6 +73,10 @@ public class Tracking<RAW extends Trackable, BASE extends Trackable> {
     return bases.stream().filter(base -> !baseToRaw.containsKey(base));
   }
 
+  public Stream<Trackable> getAllUnmatched() {
+    return Stream.concat(getUnmatchedRaws(), getUnmatchedBases());
+  }
+
   boolean containsUnmatchedBase(BASE base) {
     return !baseToRaw.containsKey(base);
   }
