@@ -42,9 +42,10 @@ import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rules.CleanCodeAttribute;
-import org.sonar.core.rule.RuleType;
 import org.sonar.api.utils.Duration;
 import org.sonar.core.issue.DefaultIssue;
+import org.sonar.core.issue.tracking.algorithm.types.Snippet;
+import org.sonar.core.rule.RuleType;
 import org.sonar.db.component.ComponentDto;
 import org.sonar.db.issuetoken.IssueTokenDto;
 import org.sonar.db.protobuf.DbIssues;
@@ -926,8 +927,8 @@ public final class IssueDto implements Serializable {
 
     issue.setSnippet(
       issueTokenDtos.stream()
-        .map(IssueTokenDto::getToken)
-        .toList());
+        .map(IssueTokenDto::toIssueToken)
+        .collect(Collectors.collectingAndThen(Collectors.toList(), Snippet::new)));
     return issue;
   }
 }

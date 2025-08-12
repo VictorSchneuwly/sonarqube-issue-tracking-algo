@@ -27,6 +27,7 @@ import org.sonar.server.platform.db.migration.step.CreateTableChange;
 
 import static org.sonar.server.platform.db.migration.def.VarcharColumnDef.UUID_SIZE;
 import static org.sonar.server.platform.db.migration.def.VarcharColumnDef.newVarcharColumnDefBuilder;
+import static org.sonar.server.platform.db.migration.def.IntegerColumnDef.newIntegerColumnDefBuilder;
 
 public class CreateTableIssueTokens extends CreateTableChange {
   private static final String TABLE_NAME = "issue_tokens";
@@ -42,6 +43,7 @@ public class CreateTableIssueTokens extends CreateTableChange {
     List<String> createQuery = new CreateTableBuilder(getDialect(), tableName)
       .addPkColumn(newVarcharColumnDefBuilder().setColumnName("uuid").setIsNullable(false).setLimit(UUID_SIZE).build())
       .addColumn(newVarcharColumnDefBuilder().setColumnName("token").setIsNullable(false).setLimit(TOKEN_COLUMN_SIZE).build())
+      .addColumn(newIntegerColumnDefBuilder().setColumnName("distance").setIsNullable(false).build())
       .addColumn(newVarcharColumnDefBuilder().setColumnName("issue_uuid").setIsNullable(false).setLimit(UUID_SIZE).build())
       .build();
 

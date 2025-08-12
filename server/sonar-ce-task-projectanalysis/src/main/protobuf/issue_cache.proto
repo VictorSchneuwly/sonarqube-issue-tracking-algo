@@ -87,7 +87,7 @@ message Issue {
   repeated Impact impacts = 49;
   optional string clean_code_attribute = 50;
   optional bool is_prioritized_rule = 51;
-  repeated string tokens = 52;
+  repeated IssueToken tokens = 52;
 }
 
 message Comment {
@@ -116,4 +116,9 @@ message Impact {
   required string software_quality = 1;
   required string severity = 2;
   required bool manual_severity = 3;
+}
+
+message IssueToken {
+  required string token = 1;
+  required int64 distance = 2;
 }

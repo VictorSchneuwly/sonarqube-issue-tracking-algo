@@ -152,7 +152,8 @@ public class PersistIssuesStep implements ComputationStep {
           .map(token -> {
             IssueTokenDto tokenDto = new IssueTokenDto();
             tokenDto.setUuid(uuidFactory.create());
-            tokenDto.setToken(token);
+            tokenDto.setToken(token.value());
+            tokenDto.setDistance(token.distance());
             tokenDto.setIssueUuid(dto.getKee());
             return tokenDto;
           })

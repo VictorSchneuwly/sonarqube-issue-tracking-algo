@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.sonar.core.issue.tracking.algorithm.CloneDetection;
 import org.sonar.core.issue.tracking.algorithm.GlobalTokenFrequencyMap;
 import org.sonar.core.issue.tracking.algorithm.PartialIndex;
@@ -58,18 +57,18 @@ public class TokenMatch<RAW extends Trackable, BASE extends Trackable> {
     Set<BASE> alreadyMatched = new HashSet<>();
 
     tracking.getUnmatchedRaws().forEach(raw -> {
-      var candidates = cloneDetection.compareBlock(raw, basePartialIndex, THRESHOLD);
+      Set<CloneDetection.Candidate> candidates = cloneDetection.compareBlock(raw, basePartialIndex, THRESHOLD);
 
       candidates.stream()
         // A BASE issue can only be matched once
-        .filter(candidate -> !alreadyMatched.contains((BASE) candidate.getLeft()))
+        .filter(candidate -> !alreadyMatched.contains((BASE) candidate.trackable()))
         .max(Comparator
           // Compare by similarity score first
-          .<Pair<Trackable, Integer>>comparingInt(Pair::getRight)
+          .comparingInt(CloneDetection.Candidate::similarityScore)
           // Then by update date as tiebreaker
-          .thenComparing(pair -> pair.getLeft().getUpdateDate()))
+          .thenComparing(candidate -> candidate.trackable().getUpdateDate()))
         .ifPresent(candidate -> {
-          BASE baseCandidate = (BASE) candidate.getLeft();
+          BASE baseCandidate = (BASE) candidate.trackable();
           tracking.match(raw, baseCandidate);
           alreadyMatched.add(baseCandidate);
         });

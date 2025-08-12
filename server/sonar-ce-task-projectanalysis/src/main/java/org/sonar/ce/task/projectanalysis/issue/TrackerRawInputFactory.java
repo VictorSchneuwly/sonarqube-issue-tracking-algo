@@ -208,10 +208,7 @@ public class TrackerRawInputFactory {
     }
 
     private void setSnippet(DefaultIssue issue, ScannerReport.TextRange textRange) {
-      var snippet = tokensRepository.getTokensSnippet(component, textRange).stream()
-        .map(ScannerReport.Token::getText)
-        .toList();
-      issue.setSnippet(snippet);
+      issue.setSnippet(tokensRepository.getTokensSnippet(component, textRange));
     }
 
     private String replaceDefaultWithOverriddenSeverity(RuleKey ruleKey, ScannerReport.Issue reportIssue) {

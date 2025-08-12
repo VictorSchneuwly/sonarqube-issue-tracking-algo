@@ -56,7 +56,7 @@ public class PartialIndex {
       var nbTokens = trackable.getSnippetSize();
       var tokensToBeIndexed = nbTokens - Math.ceil(nbTokens * threshold) + 1;
       for (int i = 0; i < tokensToBeIndexed; i++) {
-        var token = trackable.getToken(i);
+        var token = trackable.getToken(i).value();
         index.computeIfAbsent(token, k -> new ArrayList<>())
           .add(Pair.of(trackable, i));
       }

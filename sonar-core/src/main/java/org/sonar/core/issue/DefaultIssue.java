@@ -50,6 +50,8 @@ import org.sonar.api.rule.Severity;
 import org.sonar.api.rules.CleanCodeAttribute;
 import org.sonar.api.utils.Duration;
 import org.sonar.core.issue.tracking.Trackable;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
+import org.sonar.core.issue.tracking.algorithm.types.Snippet;
 import org.sonar.core.rule.RuleType;
 
 import static org.sonar.api.utils.DateUtils.truncateToSeconds;
@@ -141,7 +143,7 @@ public class DefaultIssue implements Issue, Trackable {
   private final Map<SoftwareQuality, DefaultImpact> impacts = new LinkedHashMap<>();
   private CleanCodeAttribute cleanCodeAttribute = null;
 
-  private List<String> snippet = null;
+  private Snippet snippet = null;
 
   @Override
   public String key() {
@@ -767,12 +769,12 @@ public class DefaultIssue implements Issue, Trackable {
   }
 
   @Override
-  public List<String> getSnippet() {
-    return snippet != null ? List.copyOf(snippet) : List.of();
+  public Snippet getSnippet() {
+    return snippet != null ? snippet.immutableCopy() : new Snippet(List.of()).immutableCopy();
   }
 
   @Override
-  public void sortSnippet(Comparator<String> comparator) {
+  public void sortSnippet(Comparator<IssueToken> comparator) {
     if (snippet == null) {
       return;
     }
@@ -780,8 +782,8 @@ public class DefaultIssue implements Issue, Trackable {
     snippet.sort(comparator);
   }
 
-  public DefaultIssue setSnippet(List<String> snippet) {
-    this.snippet = new ArrayList<>(snippet);
+  public DefaultIssue setSnippet(Snippet snippet) {
+    this.snippet = new Snippet(snippet.getTokens());
     return this;
   }
 }

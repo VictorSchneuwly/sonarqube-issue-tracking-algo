@@ -19,31 +19,5 @@
  */
 package org.sonar.core.issue.tracking.algorithm.types;
 
-public class Token {
-  private final String value;
-
-  public Token(String value) {
-    this.value = value;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass())
-      return false;
-
-    Token token = (Token) o;
-    return value.equals(token.value);
-  }
-
-  @Override
-  public String toString() {
-    return "Token{" +
-      "value='" + value + '\'' +
-      '}';
-  }
-
-  @Override
-  public int hashCode() {
-    return value.hashCode();
-  }
+public record IssueToken(String value, long distance) {
 }

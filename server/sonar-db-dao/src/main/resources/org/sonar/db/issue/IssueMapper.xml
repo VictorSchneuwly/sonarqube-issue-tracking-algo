@@ -130,6 +130,7 @@
   <sql id="issueTokenColumns">
     it.uuid as "it_uuid",
     it.token as "it_token",
+    it.distance as "it_distance",
     it.issue_uuid as "it_issueUuid",
   </sql>
 
@@ -151,6 +152,7 @@
                 javaType="java.util.Set" ofType="IssueToken">
       <result property="uuid" column="it_uuid"/>
       <result property="token" column="it_token"/>
+      <result property="distance" column="it_distance"/>
       <result property="issueUuid" column="it_issueUuid"/>
     </collection>
   </resultMap>

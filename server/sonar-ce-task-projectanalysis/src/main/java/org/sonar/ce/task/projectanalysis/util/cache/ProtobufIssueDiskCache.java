@@ -31,18 +31,21 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.rules.CleanCodeAttribute;
-import org.sonar.core.rule.RuleType;
 import org.sonar.api.utils.Duration;
 import org.sonar.api.utils.System2;
 import org.sonar.core.issue.DefaultImpact;
 import org.sonar.core.issue.DefaultIssue;
 import org.sonar.core.issue.DefaultIssueComment;
 import org.sonar.core.issue.FieldDiffs;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
+import org.sonar.core.issue.tracking.algorithm.types.Snippet;
+import org.sonar.core.rule.RuleType;
 import org.sonar.core.util.CloseableIterator;
 import org.sonar.core.util.Protobuf;
 import org.sonar.db.protobuf.DbIssues;
@@ -153,8 +156,11 @@ public class ProtobufIssueDiskCache implements DiskCache<DefaultIssue> {
       defaultIssue.addChange(toDefaultIssueChanges(protoFieldDiffs));
     }
 
-    // Retrieve tokens from protobuf
-    defaultIssue.setSnippet(next.getTokensList());
+    // Retrieve snippet from protobuf
+    Snippet snippet = next.getTokensList().stream()
+      .map(token -> new IssueToken(token.getToken(), token.getDistance()))
+      .collect(Collectors.collectingAndThen(Collectors.toList(), Snippet::new));
+    defaultIssue.setSnippet(snippet);
 
     return defaultIssue;
   }
@@ -221,7 +227,12 @@ public class ProtobufIssueDiskCache implements DiskCache<DefaultIssue> {
 
     // Add tokens to cache
     builder.clearTokens();
-    builder.addAllTokens(defaultIssue.getSnippet());
+    for (IssueToken token : defaultIssue.getSnippet()) {
+      builder.addTokens(IssueCache.IssueToken.newBuilder()
+        .setToken(token.value())
+        .setDistance(token.distance())
+        .build());
+    }
     return builder.build();
   }
 

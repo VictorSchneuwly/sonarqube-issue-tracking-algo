@@ -21,10 +21,11 @@ package org.sonar.core.issue.tracking;
 
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import javax.annotation.CheckForNull;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.core.issue.DefaultIssue;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
+import org.sonar.core.issue.tracking.algorithm.types.Snippet;
 
 public interface Trackable {
 
@@ -48,12 +49,12 @@ public interface Trackable {
 
   String getStatus();
 
-  default List<String> getSnippet() {
+  default Snippet getSnippet() {
     throw new UnsupportedOperationException(
       String.format("Getting snippet is not supported for %s", getClass().getName()));
   }
 
-  default void sortSnippet(Comparator<String> comparator) {
+  default void sortSnippet(Comparator<IssueToken> comparator) {
     throw new UnsupportedOperationException(
       String.format("Sorting snippet is not supported for %s", getClass().getName()));
   }
@@ -62,7 +63,7 @@ public interface Trackable {
     return getSnippet().size();
   }
 
-  default String getToken(int index) {
+  default IssueToken getToken(int index) {
     return getSnippet().get(index);
   }
 

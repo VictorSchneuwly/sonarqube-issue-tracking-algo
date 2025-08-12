@@ -21,11 +21,16 @@ package org.sonar.db.issuetoken;
 
 import java.io.Serializable;
 import java.util.Objects;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
 
 public final class IssueTokenDto implements Serializable {
   private String uuid;
   private String token;
   private String issueUuid;
+  /** 
+   * Distance is used to store the distance between the token and the issue position.
+   */
+  private long distance;
 
   public IssueTokenDto() {
     // nothing to do
@@ -53,6 +58,18 @@ public final class IssueTokenDto implements Serializable {
 
   public void setIssueUuid(String issueUuid) {
     this.issueUuid = issueUuid;
+  }
+
+  public long getDistance() {
+    return distance;
+  }
+
+  public void setDistance(long distance) {
+    this.distance = distance;
+  }
+
+  public IssueToken toIssueToken() {
+    return new IssueToken(token, distance);
   }
 
   @Override

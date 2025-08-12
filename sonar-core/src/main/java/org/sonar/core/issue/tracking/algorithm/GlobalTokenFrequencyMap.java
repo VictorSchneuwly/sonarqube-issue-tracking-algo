@@ -23,9 +23,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.sonar.core.issue.tracking.Trackable;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
 
 public class GlobalTokenFrequencyMap {
   private final Map<String, Long> frequencyMap;
@@ -34,19 +34,19 @@ public class GlobalTokenFrequencyMap {
     this.frequencyMap = trackables.stream()
       .flatMap(block -> block.getSnippet().stream())
       .collect(Collectors.groupingBy(
-        Function.identity(),
+        IssueToken::value,
         Collectors.counting()));
   }
 
-  public long getFrequency(String token) {
-    return frequencyMap.getOrDefault(token, 0L);
+  public long getFrequency(IssueToken token) {
+    return frequencyMap.getOrDefault(token.value(), 0L);
   }
 
   public Set<Map.Entry<String, Long>> entrySet() {
     return frequencyMap.entrySet();
   }
 
-  public Comparator<String> getComparator() {
+  public Comparator<IssueToken> getComparator() {
     // We want rare frequencies to be sorted first
     return Comparator.comparingLong(this::getFrequency);
   }

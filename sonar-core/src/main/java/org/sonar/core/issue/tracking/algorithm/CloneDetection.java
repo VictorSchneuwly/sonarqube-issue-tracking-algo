@@ -26,19 +26,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.sonar.core.issue.tracking.Trackable;
 
 public class CloneDetection {
+
+  public record Candidate(Trackable trackable, int similarityScore) {
+  }
+
   private final GlobalTokenFrequencyMap globalTokenFrequencyMap;
 
   public CloneDetection(GlobalTokenFrequencyMap globalTokenFrequencyMap) {
     this.globalTokenFrequencyMap = globalTokenFrequencyMap;
   }
 
-  public Set<Pair<Trackable, Integer>> compareBlock(Trackable trackable, PartialIndex index, double threshold) {
+  public Set<Candidate> compareBlock(Trackable trackable, PartialIndex index, double threshold) {
     // var selectedClones = new ArrayList<Trackable>();
-    var selectedClones = new HashSet<Pair<Trackable, Integer>>();
+    var selectedClones = new HashSet<Candidate>();
     var cloneCandidates = new HashMap<Trackable, MutablePair<Integer, Integer>>();
     trackable.sortSnippet(globalTokenFrequencyMap.getComparator());
 
@@ -48,7 +51,7 @@ public class CloneDetection {
     // TODO: potential for parallelization
     for (int blockTokenIndex = 0; blockTokenIndex < querySubBlock; blockTokenIndex++) {
       var token = trackable.getToken(blockTokenIndex);
-      for (var entry : index.get(token)) {
+      for (var entry : index.get(token.value())) {
         var candidate = entry.getLeft();
         if (!shouldConsider(candidate, trackable, threshold)) {
           continue;
@@ -90,9 +93,9 @@ public class CloneDetection {
     return candidateTokenCount > Math.ceil(threshold * checkedTokenCount);
   }
 
-  private List<Pair<Trackable, Integer>> verifyCandidates(Trackable block, int lastTokenFromBlock, Map<Trackable, MutablePair<Integer, Integer>> cloneCandidates,
+  private List<Candidate> verifyCandidates(Trackable block, int lastTokenFromBlock, Map<Trackable, MutablePair<Integer, Integer>> cloneCandidates,
     double threshold) {
-    List<Pair<Trackable, Integer>> verifiedClones = new ArrayList<>();
+    List<Candidate> verifiedClones = new ArrayList<>();
 
     for (var entry : cloneCandidates.entrySet()) { // If we go the (0,0) way, we need to filter for it here
       var candidate = entry.getKey();
@@ -121,8 +124,7 @@ public class CloneDetection {
       // If the similarity is above minimum, add to verified clones
       int similarityScore = entry.getValue().getLeft();
       if (similarityScore > minimumNumberOfTokens) {
-        verifiedClones.add(
-          Pair.of(candidate, similarityScore));
+        verifiedClones.add(new Candidate(candidate, similarityScore));
       }
     }
 

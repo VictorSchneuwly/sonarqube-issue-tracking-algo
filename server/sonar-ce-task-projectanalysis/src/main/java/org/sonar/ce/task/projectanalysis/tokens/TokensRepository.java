@@ -23,8 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.sonar.ce.task.projectanalysis.component.Component;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
+import org.sonar.core.issue.tracking.algorithm.types.Snippet;
 import org.sonar.scanner.protocol.output.ScannerReport;
 
 public class TokensRepository {
@@ -44,17 +47,30 @@ public class TokensRepository {
     return tokensByComponent.containsKey(component);
   }
 
-  public List<ScannerReport.Token> getTokensSnippet(Component component, ScannerReport.TextRange textRange) {
+  public Snippet getTokensSnippet(Component component, ScannerReport.TextRange textRange) {
     return getTokensSnippet(component, textRange, DEFAULT_WINDOW_SIZE);
   }
 
-  public List<ScannerReport.Token> getTokensSnippet(Component component, ScannerReport.TextRange textRange, int windowSize) {
+  public Snippet getTokensSnippet(Component component, ScannerReport.TextRange textRange, int windowSize) {
     if (windowSize <= 0 || !tokensByComponent.containsKey(component)) {
-      return List.of();
+      return new Snippet(List.of());
     }
 
     List<ScannerReport.Token> tokens = tokensByComponent.get(component);
 
+    int targetIndex = getTargetIndex(textRange, tokens);
+    int startIndex = Math.max(0, targetIndex - windowSize);
+    int endIndex = Math.min(tokens.size(), targetIndex + windowSize + 1);
+
+    List<ScannerReport.Token> snippet = tokens.subList(startIndex, endIndex);
+    if (snippet.isEmpty()) {
+      throw new IllegalArgumentException("No tokens found in the specified range for component: " + component);
+    }
+
+    return getSnippetWithDistance(snippet, targetIndex - startIndex);
+  }
+
+  private static int getTargetIndex(ScannerReport.TextRange textRange, List<ScannerReport.Token> tokens) {
     // Find the token that matches the start of the text range
     OptionalInt targetIndexOpt = IntStream.range(0, tokens.size())
       .filter(i -> tokens.get(i).getLine() == textRange.getStartLine() &&
@@ -65,15 +81,16 @@ public class TokensRepository {
       throw new IllegalArgumentException("No token found for the specified text range: " + textRange);
     }
 
-    int targetIndex = targetIndexOpt.getAsInt();
-    int startIndex = Math.max(0, targetIndex - windowSize);
-    int endIndex = Math.min(tokens.size(), targetIndex + windowSize + 1);
+    return targetIndexOpt.getAsInt();
+  }
 
-    List<ScannerReport.Token> snippet = tokens.subList(startIndex, endIndex);
-    if (snippet.isEmpty()) {
-      throw new IllegalArgumentException("No tokens found in the specified range for component: " + component);
-    }
-
-    return snippet;
+  private static Snippet getSnippetWithDistance(List<ScannerReport.Token> tokens, int targetIndex) {
+    return IntStream.range(0, tokens.size())
+      .mapToObj(i -> {
+        String tokenValue = tokens.get(i).getText();
+        int distance = Math.abs(i - targetIndex);
+        return new IssueToken(tokenValue, distance);
+      })
+      .collect(Collectors.collectingAndThen(Collectors.toList(), Snippet::new));
   }
 }

@@ -7,12 +7,14 @@
   <resultMap id="issueTokenResultMap" type="IssueToken" autoMapping="true">
     <id property="uuid" column="uuid"/>
     <result property="token" column="token"/>
+    <result property="distance" column="distance"/>
     <result property="issueUuid" column="issue_uuid"/>
   </resultMap>
 
   <sql id="issueTokenColumns">
     i.uuid as uuid,
     i.token as token,
+    i.distance as distance,
     i.issue_uuid as "issueUuid"
   </sql>
 
@@ -20,16 +22,18 @@
     SELECT
       uuid,
       token,
+      distance,
       issue_uuid
     FROM issue_tokens
     WHERE issue_uuid = #{issueUuid, jdbcType=VARCHAR}
   </select>
 
   <insert id="insert" parameterType="IssueToken" useGeneratedKeys="false">
-    INSERT INTO issue_tokens (uuid, token, issue_uuid)
+    INSERT INTO issue_tokens (uuid, token, distance, issue_uuid)
     VALUES (
       #{uuid, jdbcType=VARCHAR},
       #{token, jdbcType=VARCHAR},
+      #{distance, jdbcType=INTEGER},
       #{issueUuid, jdbcType=VARCHAR}
     )
   </insert>
