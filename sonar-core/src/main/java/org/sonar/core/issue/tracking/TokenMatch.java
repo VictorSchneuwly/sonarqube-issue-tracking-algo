@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.OptionalInt;
+import org.apache.commons.lang3.tuple.Pair;
 import org.sonar.core.issue.tracking.algorithm.CloneDetection;
 import org.sonar.core.issue.tracking.algorithm.GlobalTokenFrequencyMap;
 import org.sonar.core.issue.tracking.algorithm.PartialIndex;
@@ -54,22 +56,38 @@ public class TokenMatch<RAW extends Trackable, BASE extends Trackable> {
 
     Set<BASE> alreadyMatched = new HashSet<>();
 
-    tracking.getUnmatchedRaws().forEach(raw -> {
-      Set<CloneDetection.Candidate> candidates = cloneDetection.compareBlock(raw, basePartialIndex, THRESHOLD);
+    tracking.getUnmatchedRaws()
+      .map(raw -> Pair.of(raw, cloneDetection.compareBlock(raw)))
+      // We want to go over the raw issues that have a candidate with the highest similarity score first
+      .sorted((entry1, entry2) -> {
+        OptionalInt maxScore1 = entry1.getRight().stream()
+          .mapToInt(CloneDetection.Candidate::similarityScore)
+          .max();
+        OptionalInt maxScore2 = entry2.getRight().stream()
+          .mapToInt(CloneDetection.Candidate::similarityScore)
+          .max();
 
-      candidates.stream()
-        // A BASE issue can only be matched once
-        .filter(candidate -> !alreadyMatched.contains((BASE) candidate.trackable()))
-        .max(Comparator
-          // Compare by similarity score first
-          .comparingInt(CloneDetection.Candidate::similarityScore)
-          // Then by update date as tiebreaker
-          .thenComparing(candidate -> candidate.trackable().getUpdateDate()))
-        .ifPresent(candidate -> {
-          BASE baseCandidate = (BASE) candidate.trackable();
-          tracking.match(raw, baseCandidate);
-          alreadyMatched.add(baseCandidate);
-        });
-    });
+        return Integer.compare(
+          maxScore2.orElse(0),
+          maxScore1.orElse(0));
+      })
+      .forEach(entry -> {
+        RAW raw = entry.getLeft();
+        Set<CloneDetection.Candidate> candidates = entry.getRight();
+
+        candidates.stream()
+          // A BASE issue can only be matched once
+          .filter(candidate -> !alreadyMatched.contains((BASE) candidate.trackable()))
+          .max(Comparator
+            // Compare by similarity score first
+            .comparingInt(CloneDetection.Candidate::similarityScore)
+            // Then by update date as tiebreaker
+            .thenComparing(candidate -> candidate.trackable().getUpdateDate()))
+          .ifPresent(candidate -> {
+            BASE baseCandidate = (BASE) candidate.trackable();
+            tracking.match(raw, baseCandidate);
+            alreadyMatched.add(baseCandidate);
+          });
+      });
   }
 }
