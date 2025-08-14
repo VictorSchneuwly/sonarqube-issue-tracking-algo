@@ -50,9 +50,10 @@ public class PartialIndex {
     List<Trackable> blocks,
     double threshold) {
     var index = new HashMap<String, List<Pair<Trackable, Integer>>>();
+    var tokenComparator = Utils.createComparator(globalTokenFrequencyMap);
     // TODO: potential for parallel processing => spliterator with parallel stream?
     for (Trackable trackable : blocks) {
-      trackable.sortSnippet(globalTokenFrequencyMap.getComparator());
+      trackable.sortSnippet(tokenComparator);
       var nbTokens = trackable.getSnippetSize();
       var tokensToBeIndexed = nbTokens - Math.ceil(nbTokens * threshold) + 1;
       for (int i = 0; i < tokensToBeIndexed; i++) {

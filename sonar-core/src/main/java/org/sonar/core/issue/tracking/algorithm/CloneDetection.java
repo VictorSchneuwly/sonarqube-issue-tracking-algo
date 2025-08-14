@@ -20,6 +20,7 @@
 package org.sonar.core.issue.tracking.algorithm;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.sonar.core.issue.tracking.Trackable;
+import org.sonar.core.issue.tracking.algorithm.types.IssueToken;
 
 public class CloneDetection {
 
@@ -34,16 +36,22 @@ public class CloneDetection {
   }
 
   private final GlobalTokenFrequencyMap globalTokenFrequencyMap;
+  private final PartialIndex index;
+  private final double threshold;
+  private final Comparator<IssueToken> tokenComparator;
 
-  public CloneDetection(GlobalTokenFrequencyMap globalTokenFrequencyMap) {
+  public CloneDetection(GlobalTokenFrequencyMap globalTokenFrequencyMap, PartialIndex partialIndex, double threshold) {
     this.globalTokenFrequencyMap = globalTokenFrequencyMap;
+    this.tokenComparator = Utils.createComparator(globalTokenFrequencyMap);
+    this.index = partialIndex;
+    this.threshold = threshold;
   }
 
-  public Set<Candidate> compareBlock(Trackable trackable, PartialIndex index, double threshold) {
+  public Set<Candidate> compareBlock(Trackable trackable) {
     // var selectedClones = new ArrayList<Trackable>();
     var selectedClones = new HashSet<Candidate>();
     var cloneCandidates = new HashMap<Trackable, MutablePair<Integer, Integer>>();
-    trackable.sortSnippet(globalTokenFrequencyMap.getComparator());
+    trackable.sortSnippet(tokenComparator);
 
     var nbTokens = trackable.getSnippetSize();
     var querySubBlock = nbTokens - Math.ceil(nbTokens * threshold) + 1;

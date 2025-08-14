@@ -31,22 +31,20 @@ import org.sonar.core.issue.tracking.algorithm.PartialIndex;
 public class TokenMatch<RAW extends Trackable, BASE extends Trackable> {
   private static final double THRESHOLD = 0.5;
 
-  private final GlobalTokenFrequencyMap globalTokenFrequencyMap;
-  private final PartialIndex basePartialIndex;
   private final CloneDetection cloneDetection;
 
   protected TokenMatch(Tracking<RAW, BASE> tracking) {
-    // Constructor logic can be added here if needed
-
     List<Trackable> unmatched = tracking.getAllUnmatched().collect(Collectors.toList());
     List<Trackable> unmatchedBases = tracking.getUnmatchedBases().collect(Collectors.toList());
 
-    this.globalTokenFrequencyMap = new GlobalTokenFrequencyMap(unmatched);
-    this.basePartialIndex = new PartialIndex(
+    GlobalTokenFrequencyMap globalTokenFrequencyMap = new GlobalTokenFrequencyMap(unmatched);
+    PartialIndex basePartialIndex = new PartialIndex(
       globalTokenFrequencyMap,
+      // The partial index only uses unmatched bases
+      // as this is what raw issues will be matched against
       unmatchedBases,
       THRESHOLD);
-    this.cloneDetection = new CloneDetection(globalTokenFrequencyMap);
+    this.cloneDetection = new CloneDetection(globalTokenFrequencyMap, basePartialIndex, THRESHOLD);
   }
 
   protected void match(Tracking<RAW, BASE> tracking) {
