@@ -72,6 +72,24 @@ public class TokensRepository {
 
   private static int getTargetIndex(ScannerReport.TextRange textRange, List<ScannerReport.Token> tokens) {
     // Find the token that matches the start of the text range
+
+    // If startOffset is 0, it means the whole line is targeted, so find the first token on that line
+    if (textRange.getStartOffset() == 0) {
+      OptionalInt firstTokenOnLineOpt = IntStream.range(0, tokens.size())
+        .filter(i -> tokens.get(i).getLine() == textRange.getStartLine())
+        // To find the first token on the line, we can use the column
+        // => this is needed as we cannot guarantee that the first token of the line
+        // is also the first token in the list
+        .reduce((i1, i2) -> tokens.get(i1).getColumn() <= tokens.get(i2).getColumn() ? i1 : i2);
+
+      if (firstTokenOnLineOpt.isEmpty()) {
+        throw new IllegalArgumentException("No token found on line " + textRange.getStartLine());
+      }
+
+      return firstTokenOnLineOpt.getAsInt();
+    }
+
+    // Otherwise, find the token that matches the exact column
     OptionalInt targetIndexOpt = IntStream.range(0, tokens.size())
       .filter(i -> tokens.get(i).getLine() == textRange.getStartLine() &&
         tokens.get(i).getColumn() == textRange.getStartOffset())
