@@ -49,8 +49,8 @@ public final class JavaTokenProducer {
         // White Space
         .ignore("\\s")
         // Comments
-        .ignore("//[^\\n\\r]*+")
-        .ignore("/\\*[\\s\\S]*?\\*/")
+        // .ignore("//[^\\n\\r]*+")
+        // .ignore("/\\*[\\s\\S]*?\\*/")
         // String Literals
         .token("\"([^\"\\\\]*+(\\\\[\\s\\S])?+)*+\"", NORMALIZED_CHARACTER_LITERAL)
         // Character Literals
@@ -75,6 +75,8 @@ public final class JavaTokenProducer {
         .token("0[bB][01_]++" + INT_SUFFIX + "?+", NORMALIZED_NUMERIC_LITERAL)
         // Decimal and Octal
         .token("[0-9_]++" + INT_SUFFIX + "?+", NORMALIZED_NUMERIC_LITERAL)
+        // Comments keywords
+        .token("//+|/\\*+|\\*+/")
         // Any other character
         .token(".")
         .build();
