@@ -85,6 +85,18 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
       return;
     }
     createIndex(sourceFiles);
+
+    // HACK: get the tokens here
+    // For the tokens, we also want to have the test files
+    List<InputFile> allSourceFiles = StreamSupport.stream(
+      context.fileSystem().inputFiles(
+        p.and(
+          p.hasLanguage("java")))
+        .spliterator(),
+      false)
+      .filter(f -> !((DefaultInputFile) f).isExcludedForDuplication())
+      .toList();
+    storeTokens(allSourceFiles);
   }
 
   private void createIndex(Iterable<InputFile> sourceFiles) {
@@ -100,19 +112,7 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
 
       try (InputStream is = inputFile.inputStream();
         Reader reader = new InputStreamReader(is, inputFile.charset())) {
-
-        // HACK: get the tokens here
-        var tokenQueue = tokenChunker.chunk(reader);
-        var scannerId = ((DefaultInputFile) inputFile).scannerId();
-        for (var token : tokenQueue) {
-          ScannerReport.Token.Builder tokenBuilder = ScannerReport.Token.newBuilder()
-            .setText(token.getValue())
-            .setLine(token.getLine())
-            .setColumn(token.getColumn());
-          pipe.add(scannerId, tokenBuilder.build());
-        }
-
-        statements = statementChunker.chunk(tokenQueue);
+        statements = statementChunker.chunk(tokenChunker.chunk(reader));
       } catch (FileNotFoundException e) {
         throw new IllegalStateException("Cannot find file " + inputFile.file(), e);
       } catch (IOException e) {
@@ -126,6 +126,32 @@ public class JavaCpdBlockIndexerSensor implements ProjectSensor {
         throw new IllegalStateException("Cannot process file " + inputFile.file(), e);
       }
       index.insert(inputFile, blocks);
+    }
+  }
+
+  private void storeTokens(Iterable<InputFile> sourceFiles) {
+    TokenChunker tokenChunker = JavaTokenProducer.build();
+
+    for (InputFile inputFile : sourceFiles) {
+      LOG.debug("Getting tokens from {}", inputFile);
+      try (InputStream is = inputFile.inputStream();
+        Reader reader = new InputStreamReader(is, inputFile.charset())) {
+
+        // HACK: get the tokens here
+        var tokenQueue = tokenChunker.chunk(reader);
+        var scannerId = ((DefaultInputFile) inputFile).scannerId();
+        for (var token : tokenQueue) {
+          ScannerReport.Token.Builder tokenBuilder = ScannerReport.Token.newBuilder()
+            .setText(token.getValue())
+            .setLine(token.getLine())
+            .setColumn(token.getColumn());
+          pipe.add(scannerId, tokenBuilder.build());
+        }
+      } catch (FileNotFoundException e) {
+        throw new IllegalStateException("Cannot find file " + inputFile.filename(), e);
+      } catch (IOException e) {
+        throw new IllegalStateException("Exception handling file: " + inputFile.filename(), e);
+      }
     }
   }
 
