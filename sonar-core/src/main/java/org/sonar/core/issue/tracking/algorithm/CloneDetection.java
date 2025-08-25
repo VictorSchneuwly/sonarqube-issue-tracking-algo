@@ -60,20 +60,25 @@ public class CloneDetection {
     for (int blockTokenIndex = 0; blockTokenIndex < querySubBlock; blockTokenIndex++) {
       var token = trackable.getToken(blockTokenIndex);
       for (var entry : index.get(token.value())) {
-        var candidate = entry.getLeft();
+        Trackable candidate = entry.getLeft();
         if (!shouldConsider(candidate, trackable, threshold)) {
           continue;
         }
 
-        var candidateTokenCount = candidate.getSnippetSize();
-        var candidateTokenIndex = entry.getRight();
-        var minimumNumberOfTokens = computeMinimumNumberOfTokens(trackable, candidate, threshold);
-        var uBound = 1 + Math.min(nbTokens - blockTokenIndex, candidateTokenCount - candidateTokenIndex);
+        int candidateTokenCount = candidate.getSnippetSize();
+        int candidateTokenIndex = entry.getRight();
+        double minimumNumberOfTokens = computeMinimumNumberOfTokens(trackable, candidate, threshold);
+        int uBound = 1 + Math.min(nbTokens - blockTokenIndex, candidateTokenCount - candidateTokenIndex);
+        int candidateIncrement = cloneCandidates
+          .getOrDefault(candidate, MutablePair.of(0, 0))
+          .getLeft();
 
-        if (cloneCandidates.getOrDefault(candidate, MutablePair.of(0, 0)).getLeft() + uBound >= minimumNumberOfTokens) {
+        if (candidateIncrement + uBound >= minimumNumberOfTokens) {
           cloneCandidates.merge(candidate, MutablePair.of(1, candidateTokenIndex), (oldValue, newValue) -> {
-            oldValue.left += newValue.getLeft(); // Increment count
-            oldValue.right = newValue.getRight(); // Keep track of last index
+            // Increment count
+            oldValue.left += newValue.getLeft();
+            // Keep track of last index
+            oldValue.right = newValue.getRight();
             return oldValue;
           });
         } else {
@@ -105,8 +110,8 @@ public class CloneDetection {
     double threshold) {
     List<Candidate> verifiedClones = new ArrayList<>();
 
-    for (var entry : cloneCandidates.entrySet()) { // If we go the (0,0) way, we need to filter for it here
-      var candidate = entry.getKey();
+    for (var entry : cloneCandidates.entrySet()) {
+      Trackable candidate = entry.getKey();
       var minimumNumberOfTokens = computeMinimumNumberOfTokens(block, candidate, threshold);
       var lastTokenIndexInCandidate = entry.getValue().getRight();
       while (lastTokenFromBlock < block.getSnippetSize() && lastTokenIndexInCandidate < candidate.getSnippetSize()) {
@@ -114,8 +119,8 @@ public class CloneDetection {
           break;
         }
 
-        var blockToken = block.getToken(lastTokenFromBlock);
-        var candidateToken = candidate.getToken(lastTokenIndexInCandidate);
+        IssueToken blockToken = block.getToken(lastTokenFromBlock);
+        IssueToken candidateToken = candidate.getToken(lastTokenIndexInCandidate);
 
         if (blockToken.equals(candidateToken)) {
           // Increase similarity score
