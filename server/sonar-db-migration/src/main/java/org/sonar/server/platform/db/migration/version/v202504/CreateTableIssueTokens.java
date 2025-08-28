@@ -32,7 +32,7 @@ import static org.sonar.server.platform.db.migration.def.IntegerColumnDef.newInt
 public class CreateTableIssueTokens extends CreateTableChange {
   private static final String TABLE_NAME = "issue_tokens";
   // TODO Decide the size allowed for one token.
-  private static final int TOKEN_COLUMN_SIZE = 100;
+  private static final int TOKEN_COLUMN_SIZE = 200;
 
   protected CreateTableIssueTokens(Database db) {
     super(db, TABLE_NAME);
