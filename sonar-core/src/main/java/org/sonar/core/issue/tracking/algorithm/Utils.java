@@ -29,10 +29,12 @@ public final class Utils {
   }
 
   public static Comparator<IssueToken> createComparator(GlobalTokenFrequencyMap globalTokenFrequencyMap) {
-    return Comparator.comparingLong(token -> {
-      long frequency = globalTokenFrequencyMap.getFrequency(token);
-      // We weight the frequency using the distance of the token from the issue's position.
-      return frequency * token.distance();
-    });
+    return Comparator.comparingLong(token -> computeWeight(globalTokenFrequencyMap, token));
+  }
+
+  public static long computeWeight(GlobalTokenFrequencyMap globalTokenFrequencyMap, IssueToken token) {
+    long frequency = globalTokenFrequencyMap.getFrequency(token);
+    // We weight the frequency using the distance of the token from the issue's position.
+    return frequency * token.distance();
   }
 }

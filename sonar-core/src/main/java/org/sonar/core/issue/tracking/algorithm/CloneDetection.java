@@ -19,11 +19,9 @@
  */
 package org.sonar.core.issue.tracking.algorithm;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -48,13 +46,11 @@ public class CloneDetection {
   }
 
   public Set<Candidate> compareBlock(Trackable trackable) {
-    // var selectedClones = new ArrayList<Trackable>();
-    var selectedClones = new HashSet<Candidate>();
     var cloneCandidates = new HashMap<Trackable, MutablePair<Integer, Integer>>();
     trackable.sortSnippet(tokenComparator);
 
     var nbTokens = trackable.getSnippetSize();
-    var querySubBlock = nbTokens - Math.ceil(nbTokens * threshold) + 1;
+    int querySubBlock = nbTokens - (int) Math.ceil(nbTokens * threshold) + 1;
 
     // TODO: potential for parallelization
     for (int blockTokenIndex = 0; blockTokenIndex < querySubBlock; blockTokenIndex++) {
@@ -87,48 +83,45 @@ public class CloneDetection {
         }
       }
 
-      selectedClones.addAll(verifyCandidates(trackable, blockTokenIndex, cloneCandidates, threshold));
-
-      // Reset the candidates for the next block
-      cloneCandidates.clear();
     }
 
-    return selectedClones;
+    return verifyCandidates(trackable, querySubBlock - 1, cloneCandidates, threshold);
   }
 
-  private double computeMinimumNumberOfTokens(Trackable block, Trackable candidate, double threshold) {
+  private static double computeMinimumNumberOfTokens(Trackable block, Trackable candidate, double threshold) {
     return Math.ceil(Math.max(block.getSnippetSize(), candidate.getSnippetSize()) * threshold);
   }
 
-  private boolean shouldConsider(Trackable candidate, Trackable checked, double threshold) {
+  private static boolean shouldConsider(Trackable candidate, Trackable checked, double threshold) {
     var candidateTokenCount = candidate.getSnippetSize();
     var checkedTokenCount = checked.getSnippetSize();
     return candidateTokenCount > Math.ceil(threshold * checkedTokenCount);
   }
 
-  private List<Candidate> verifyCandidates(Trackable block, int lastTokenFromBlock, Map<Trackable, MutablePair<Integer, Integer>> cloneCandidates,
+  private Set<Candidate> verifyCandidates(Trackable block, int lastTokenFromBlock, Map<Trackable, MutablePair<Integer, Integer>> cloneCandidates,
     double threshold) {
-    List<Candidate> verifiedClones = new ArrayList<>();
+    Set<Candidate> verifiedClones = new HashSet<>();
 
     for (var entry : cloneCandidates.entrySet()) {
       Trackable candidate = entry.getKey();
       var minimumNumberOfTokens = computeMinimumNumberOfTokens(block, candidate, threshold);
+      int lastTokenFromBlockIndex = lastTokenFromBlock;
       var lastTokenIndexInCandidate = entry.getValue().getRight();
-      while (lastTokenFromBlock < block.getSnippetSize() && lastTokenIndexInCandidate < candidate.getSnippetSize()) {
-        if (Math.min(block.getSnippetSize() - lastTokenFromBlock, candidate.getSnippetSize() - lastTokenIndexInCandidate) < minimumNumberOfTokens) {
+      while (lastTokenFromBlockIndex < block.getSnippetSize() && lastTokenIndexInCandidate < candidate.getSnippetSize()) {
+        if (Math.min(block.getSnippetSize() - lastTokenFromBlockIndex, candidate.getSnippetSize() - lastTokenIndexInCandidate) < minimumNumberOfTokens) {
           break;
         }
 
-        IssueToken blockToken = block.getToken(lastTokenFromBlock);
+        IssueToken blockToken = block.getToken(lastTokenFromBlockIndex);
         IssueToken candidateToken = candidate.getToken(lastTokenIndexInCandidate);
 
         if (blockToken.equals(candidateToken)) {
           // Increase similarity score
           entry.getValue().left += 1;
-          lastTokenFromBlock += 1;
+          lastTokenFromBlockIndex += 1;
           lastTokenIndexInCandidate += 1;
-        } else if (globalTokenFrequencyMap.getFrequency(blockToken) < globalTokenFrequencyMap.getFrequency(candidateToken)) {
-          lastTokenFromBlock += 1;
+        } else if (Utils.computeWeight(globalTokenFrequencyMap, blockToken) < Utils.computeWeight(globalTokenFrequencyMap, candidateToken)) {
+          lastTokenFromBlockIndex += 1;
         } else {
           lastTokenIndexInCandidate += 1;
         }
