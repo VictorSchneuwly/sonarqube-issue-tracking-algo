@@ -50,7 +50,7 @@ public class TokenMatch<RAW extends Trackable, BASE extends Trackable> {
   }
 
   protected void match(Tracking<RAW, BASE> tracking) {
-    if (tracking.isComplete()) {
+    if (tracking.isComplete() || tracking.getUnmatchedBases().toList().isEmpty()) {
       return;
     }
 
