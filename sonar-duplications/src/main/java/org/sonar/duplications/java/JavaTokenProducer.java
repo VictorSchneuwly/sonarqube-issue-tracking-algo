@@ -52,9 +52,9 @@ public final class JavaTokenProducer {
         // .ignore("//[^\\n\\r]*+")
         // .ignore("/\\*[\\s\\S]*?\\*/")
         // String Literals
-        .token("\"([^\"\\\\]*+(\\\\[\\s\\S])?+)*+\"", NORMALIZED_CHARACTER_LITERAL)
+        // .token("\"([^\"\\\\]*+(\\\\[\\s\\S])?+)*+\"", NORMALIZED_CHARACTER_LITERAL)
         // Character Literals
-        .token("'([^'\\n\\\\]*+(\\\\.)?+)*+'", NORMALIZED_CHARACTER_LITERAL)
+        // .token("'([^'\\n\\\\]*+(\\\\.)?+)*+'", NORMALIZED_CHARACTER_LITERAL)
         // Identifiers, Keywords, Boolean Literals, The Null Literal
         .token("\\p{javaJavaIdentifierStart}++\\p{javaJavaIdentifierPart}*+")
         // Floating-Point Literals
