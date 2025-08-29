@@ -30,16 +30,30 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> extends Abst
 
   public NonClosedTracking<RAW, BASE> trackNonClosed(Input<RAW> rawInput, Input<BASE> baseInput) {
     NonClosedTracking<RAW, BASE> tracking = NonClosedTracking.of(rawInput, baseInput);
+    // Phase 1: High-confidence exact matches first (fast and reliable)
+    // 1. match by rule, line, line hash and message (exact match)
+    match(tracking, LineAndLineHashAndMessage::new);
 
-    if (tracking.isComplete()) {
-      return tracking;
+    // 2. match issues with same rule, same line and same line hash, but not necessarily with same message
+    match(tracking, LineAndLineHashKey::new);
+
+    // Phase 2: TokenMatch algorithm for complex cases
+    // This handles code moves, refactoring, and similarity-based matching
+    if (!tracking.isComplete()) {
+      TokenMatch<RAW, BASE> tokenMatch = new TokenMatch<>(tracking);
+      tokenMatch.match(tracking);
     }
 
-    // return oldTrackNonClosed(tracking);
+    // Phase 3: Fallback strategies for remaining unmatched issues
+    // 4. match issues with same rule, same message and same line hash
+    match(tracking, LineHashAndMessageKey::new);
 
-    TokenMatch<RAW, BASE> tokenMatch = new TokenMatch<>(tracking);
+    // 5. match issues with same rule, same line and same message
+    match(tracking, LineAndMessageKey::new);
 
-    tokenMatch.match(tracking);
+    // 6. match issues with same rule and same line hash but different line and different message.
+    // See SONAR-2812
+    match(tracking, LineHashKey::new);
 
     return tracking;
   }
